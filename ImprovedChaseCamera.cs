@@ -8,7 +8,6 @@ namespace ImprovedChaseCamera
 	{
 		public static KeyBinding ENABLE_CHASE = new KeyBinding(KeyCode.Tab);
 		public static KeyBinding ADJUST_LOOK = new KeyBinding(KeyCode.Mouse1);
-		public static KeyBinding ENABLE_MOUSE_JOYSTICK = new KeyBinding(KeyCode.RightAlt);
 		public static KeyBinding SET_IVA_SNAP = new KeyBinding(KeyCode.KeypadEnter);
 		public bool adjustLook = false;
 		public bool adjustLookIVA = false;
@@ -27,13 +26,13 @@ namespace ImprovedChaseCamera
 		
 		public float timeCheck = 0;
 		
-		public bool mouseJoystickEnabled = false;
+		//public bool mouseJoystickEnabled = false;
 		public bool isIVA = false;
 		
 		
 		//Configurable values
 		public float defaultAngle = 10;
-		public float setFov = 60f;
+		//public float setFov = 60f;
 		public bool defaultOn = false;
 		public bool disableAuto = false;
 		public bool autoSnap = false;
@@ -71,21 +70,7 @@ namespace ImprovedChaseCamera
 			{
 				adjustLook=false;	
 			}
-			if(ENABLE_MOUSE_JOYSTICK.GetKeyDown())
-			{
-				if(!mouseJoystickEnabled && (enableFreeChase || enableChase || isIVA))
-				{
-					EnableMouseJoystick();
-				}
-				else
-				{
-					DisableMouseJoystick();
-				}
-			}
-			if(!enableFreeChase && !enableChase && mouseJoystickEnabled)
-			{
-				DisableMouseJoystick();	
-			}
+			
 			
 			if(InternalCamera.Instance!=null && InternalCamera.Instance.isActive)  //checking if camera is IVA
 			{
@@ -97,8 +82,8 @@ namespace ImprovedChaseCamera
 
 			}
 			
-			#region Chase mode
-			if(FlightCamera.fetch.mode == FlightCamera.Modes.CHASE && !MapView.MapIsEnabled && !FlightGlobals.ActiveVessel.isEVA)
+			#region Chase(locked) mode
+			if(FlightCamera.fetch.mode == FlightCamera.Modes.LOCKED && !MapView.MapIsEnabled && !FlightGlobals.ActiveVessel.isEVA)
 			{
 				Vector3 lookVector = Quaternion.Inverse(FlightGlobals.ActiveVessel.transform.rotation) * FlightGlobals.ActiveVessel.GetSrfVelocity();
 				//lookvector X is left/right velocity, Y is forward velocity, Z is up/down velocity
@@ -137,7 +122,7 @@ namespace ImprovedChaseCamera
 					timeCheck = Time.time;
 					snapHeading = 0;
 					snapPitch = defaultAngle*Mathf.Deg2Rad;
-					FlightCamera.fetch.SetFoV(setFov);
+					//FlightCamera.fetch.SetFoV(setFov);
 				}
 				
 				if(ENABLE_CHASE.GetKeyDown())
@@ -163,7 +148,7 @@ namespace ImprovedChaseCamera
 						timeCheck = Time.time;
 						snapHeading = 0;
 						snapPitch = defaultAngle*Mathf.Deg2Rad;
-						FlightCamera.fetch.SetFoV(setFov);
+						//FlightCamera.fetch.SetFoV(setFov);
 					}
 					enableChase = !enableChase;
 				}
@@ -179,7 +164,7 @@ namespace ImprovedChaseCamera
 					}
 				}
 			}
-			if(FlightCamera.fetch.mode != FlightCamera.Modes.CHASE && enableChase) //runs once on switching out of chase cam
+			if(FlightCamera.fetch.mode != FlightCamera.Modes.LOCKED && enableChase) //runs once on switching out of chase cam
 			{
 				//setCam = false;
 				enableChase = false;
@@ -222,7 +207,7 @@ namespace ImprovedChaseCamera
 					ScreenMessages.PostScreenMessage(freeChaseOn, true);
 					snapHeading = 0;
 					snapPitch = defaultAngle*Mathf.Deg2Rad;
-					FlightCamera.fetch.SetFoV(setFov);
+					//FlightCamera.fetch.SetFoV(setFov);
 					timeCheck = Time.time;
 				}
 				
@@ -248,7 +233,7 @@ namespace ImprovedChaseCamera
 						ScreenMessages.PostScreenMessage(freeChaseOn, true);
 						snapHeading = 0;
 						snapPitch = defaultAngle*Mathf.Deg2Rad;
-						FlightCamera.fetch.SetFoV(setFov);
+						//FlightCamera.fetch.SetFoV(setFov);
 						timeCheck = Time.time;
 
 
@@ -384,21 +369,22 @@ namespace ImprovedChaseCamera
 		
 		private Quaternion getSrfRotation(Vessel vessel)  //credits to r4m0n -- modified
 		{
-		      Vector3d CoM;
-		      Vector3d MoI;
-		      Vector3d up;
-		      Quaternion rotationSurface;
-		      Quaternion rotationVesselSurface;
+			Vector3d CoM;
+			Vector3d MoI;
+			Vector3d up;
+			Quaternion rotationSurface;
+			Quaternion rotationVesselSurface;
 		
-		      CoM = vessel.findWorldCenterOfMass();
-		      MoI = vessel.findLocalMOI(CoM);
-		      up = (CoM - vessel.mainBody.position).normalized;
+			CoM = vessel.findWorldCenterOfMass();
+			MoI = vessel.findLocalMOI(CoM);
+			up = (CoM - vessel.mainBody.position).normalized;
+				
+		     // Vector3d north = Vector3.Exclude(up, (vessel.mainBody.position + vessel.mainBody.transform.up * (float)vessel.mainBody.Radius) - CoM).normalized;
+			Vector3d north = Vector3.ProjectOnPlane((vessel.mainBody.position + vessel.mainBody.transform.up * (float)vessel.mainBody.Radius) - CoM, up).normalized;
+			rotationSurface = Quaternion.LookRotation(north, up);
+			rotationVesselSurface = Quaternion.Inverse(Quaternion.Euler(90, 0, 0) * Quaternion.Inverse(vessel.transform.rotation) * rotationSurface);
 		
-		      Vector3d north = Vector3.Exclude(up, (vessel.mainBody.position + vessel.mainBody.transform.up * (float)vessel.mainBody.Radius) - CoM).normalized;
-		      rotationSurface = Quaternion.LookRotation(north, up);
-		      rotationVesselSurface = Quaternion.Inverse(Quaternion.Euler(90, 0, 0) * Quaternion.Inverse(vessel.transform.rotation) * rotationSurface);
-		
-				//y = heading, x = pitch in degrees
+			//y = heading, x = pitch in degrees
 			
 			return rotationVesselSurface;
 		}
@@ -417,10 +403,12 @@ namespace ImprovedChaseCamera
 					{
 						defaultAngle = float.Parse(cfg.GetValue ("defaultAngle"));
 					}
+					/*
 					if(cfg.HasValue("setFov"))
 					{
 						setFov = float.Parse(cfg.GetValue ("setFov"));
 					}
+					*/
 					if(cfg.HasValue("defaultOn"))
 					{
 						defaultOn = bool.Parse(cfg.GetValue ("defaultOn"));	
@@ -449,46 +437,9 @@ namespace ImprovedChaseCamera
 			}
 		}
 		
-		public void EnableMouseJoystick()
-		{
-			FlightGlobals.ActiveVessel.OnFlyByWire += new FlightInputCallback(MouseJoystick);
-			mouseJoystickEnabled = true;
-			ScreenMessages.RemoveMessage (msgMouseJoyOn);
-			ScreenMessages.RemoveMessage (msgMouseJoyOff);
-			ScreenMessages.PostScreenMessage(msgMouseJoyOn, true);
-		}
 		
-		public void DisableMouseJoystick()
-		{
-			FlightGlobals.ActiveVessel.OnFlyByWire -= new FlightInputCallback(MouseJoystick);
-			mouseJoystickEnabled = false;
-			ScreenMessages.RemoveMessage (msgMouseJoyOn);
-			ScreenMessages.RemoveMessage (msgMouseJoyOff);
-			ScreenMessages.PostScreenMessage(msgMouseJoyOff, true);
-		}
 		
-		public void MouseJoystick(FlightCtrlState s)
-		{
-			Vessel v = FlightGlobals.ActiveVessel;
-			Quaternion vesselRot = getSrfRotation(v);
-			float rollDegrees = ((vesselRot.eulerAngles.z > 180f) ? (vesselRot.eulerAngles.z - 360.0f) : vesselRot.eulerAngles.z);
-			Quaternion rollAdjust = Quaternion.AngleAxis(rollDegrees, new Vector3(0, 0, -1));
-			float circleRadius = Screen.height/4;
-			Vector3 circleMousePos = new Vector3((Input.mousePosition.x-(Screen.width/2))/circleRadius, (Input.mousePosition.y-(Screen.height/2))/circleRadius, 0);
-			Vector3 adjustedMousePos = rollAdjust * circleMousePos;
-			if(enableFreeChase)
-			{
-				s.yaw = adjustedMousePos.x;
-				s.pitch = adjustedMousePos.y;
-			}
-			if(enableChase || isIVA)
-			{
-				s.yaw = circleMousePos.x;
-				s.pitch = circleMousePos.y;
-			}
-			
-			
-		}
+		
 		
 	}
 }
