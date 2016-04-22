@@ -105,7 +105,7 @@ namespace ImprovedChaseCamera
 				if(adjustLook)
 				{
 					snapHeading = FlightCamera.fetch.camHdg - (0 - pitchAngleQ.Roll());
-					snapPitch = FlightCamera.fetch.camPitch - (0 + pitchAngleQ.Pitch ());
+					snapPitch = FlightCamera.fetch.camPitch - (0 + pitchAngleQ.Pitch());
 				}
 				
 				if(defaultOn && defaultFiredMode != "CHASE")
@@ -117,8 +117,8 @@ namespace ImprovedChaseCamera
 					ScreenMessages.RemoveMessage(chaseOff);
 					ScreenMessages.RemoveMessage(freeChaseOn);
 					ScreenMessages.RemoveMessage(freeChaseOff);
-					
-					ScreenMessages.PostScreenMessage(chaseOn, true);
+
+                    ScreenMessages.PostScreenMessage(chaseOn);
 					timeCheck = Time.time;
 					snapHeading = 0;
 					snapPitch = defaultAngle*Mathf.Deg2Rad;
@@ -134,7 +134,7 @@ namespace ImprovedChaseCamera
 						ScreenMessages.RemoveMessage(freeChaseOn);
 						ScreenMessages.RemoveMessage(freeChaseOff);
 						
-						ScreenMessages.PostScreenMessage(chaseOff, true);
+						ScreenMessages.PostScreenMessage(chaseOff);
 						FlightCamera.fetch.SetFoV(FlightCamera.fetch.fovDefault);
 					}
 					if(!enableChase)
@@ -144,7 +144,7 @@ namespace ImprovedChaseCamera
 						ScreenMessages.RemoveMessage(freeChaseOn);
 						ScreenMessages.RemoveMessage(freeChaseOff);
 						
-						ScreenMessages.PostScreenMessage(chaseOn, true);
+						ScreenMessages.PostScreenMessage(chaseOn);
 						timeCheck = Time.time;
 						snapHeading = 0;
 						snapPitch = defaultAngle*Mathf.Deg2Rad;
@@ -157,7 +157,7 @@ namespace ImprovedChaseCamera
 				{
 					
 					if(FlightGlobals.ActiveVessel.srf_velocity.magnitude>0.5){
-						targetPitch = (0 + pitchAngleQ.Pitch () + snapPitch);
+						targetPitch = (0 + pitchAngleQ.Pitch() + snapPitch);
 						FlightCamera.fetch.camPitch = Mathf.Lerp(FlightCamera.fetch.camPitch, targetPitch, lerpRate);
 						targetHeading = (0 - pitchAngleQ.Roll() + snapHeading);
 						FlightCamera.fetch.camHdg = Mathf.Lerp(FlightCamera.fetch.camHdg, targetHeading, lerpRate);
@@ -204,7 +204,7 @@ namespace ImprovedChaseCamera
 					ScreenMessages.RemoveMessage(freeChaseOn);
 					ScreenMessages.RemoveMessage(freeChaseOff);
 						
-					ScreenMessages.PostScreenMessage(freeChaseOn, true);
+					ScreenMessages.PostScreenMessage(freeChaseOn);
 					snapHeading = 0;
 					snapPitch = defaultAngle*Mathf.Deg2Rad;
 					//FlightCamera.fetch.SetFoV(setFov);
@@ -220,7 +220,7 @@ namespace ImprovedChaseCamera
 						ScreenMessages.RemoveMessage(freeChaseOn);
 						ScreenMessages.RemoveMessage(freeChaseOff);
 						
-						ScreenMessages.PostScreenMessage(freeChaseOff, true);
+						ScreenMessages.PostScreenMessage(freeChaseOff);
 						FlightCamera.fetch.SetFoV(FlightCamera.fetch.fovDefault);
 					}
 					if(!enableFreeChase)
@@ -230,7 +230,7 @@ namespace ImprovedChaseCamera
 						ScreenMessages.RemoveMessage(freeChaseOn);
 						ScreenMessages.RemoveMessage(freeChaseOff);
 							
-						ScreenMessages.PostScreenMessage(freeChaseOn, true);
+						ScreenMessages.PostScreenMessage(freeChaseOn);
 						snapHeading = 0;
 						snapPitch = defaultAngle*Mathf.Deg2Rad;
 						//FlightCamera.fetch.SetFoV(setFov);
